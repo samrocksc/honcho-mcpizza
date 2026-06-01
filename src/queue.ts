@@ -13,7 +13,7 @@ export type QueuedMessage = {
   readonly created_at?: string;
 };
 
-import type { StorageTarget } from "./config.js";
+import type { StorageTarget } from "./config";
 
 export type HonchoClientService = {
   readonly request: <T>(

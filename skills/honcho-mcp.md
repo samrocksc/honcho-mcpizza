@@ -49,7 +49,7 @@ This affects queue tool schemas: if only `session` is enabled, `session_id` beco
      "mcpServers": {
        "honcho": {
          "command": "node",
-         "args": ["/path/to/dist/index.js", "--honcho-url", "http://100.77.182.4:8000"],
+         "args": ["/path/to/dist/index.js", "--honcho-url", "http://your-honcho-server:8000"],
          "env": {
            "HONCHO_API_KEY": "your-api-key-if-needed"
          }
@@ -66,7 +66,7 @@ This affects queue tool schemas: if only `session` is enabled, `session_id` beco
          "command": "node",
          "args": ["/path/to/dist/index.js"],
          "env": {
-           "HONCHO_URL": "http://100.77.182.4:8000",
+           "HONCHO_URL": "http://your-honcho-server:8000",
            "HONCHO_API_KEY": "your-api-key-if-needed"
          }
        }
@@ -191,7 +191,7 @@ This way memory accumulates locally and syncs on a schedule you control.
 ## Configuration
 
 ### Environment Variables
-- `HONCHO_URL` (required) — Base URL of self-hosted Honcho (e.g., `http://100.77.182.4:8000`)
+- `HONCHO_URL` (required) — Base URL of self-hosted Honcho (e.g., `http://honcho.internal:8000`)
 - `HONCHO_API_KEY` (optional) — Bearer token for scoped access (omit for zero-trust localhost)
 
 ### CLI Arguments

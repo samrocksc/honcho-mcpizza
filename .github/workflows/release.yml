@@ -23,7 +23,7 @@ jobs:
       - name: Configure npm for GitHub Packages
         run: |
           npm config set @samrocksc:registry https://npm.pkg.github.com
-          npm config set //npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}
+          npm config set //npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_PACKAGES_TOKEN }}
 
       - name: Create Release Pull Request or Publish to GitHub Packages
         id: changesets
@@ -31,4 +31,4 @@ jobs:
         with:
           publish: npm run release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_PACKAGES_TOKEN }}

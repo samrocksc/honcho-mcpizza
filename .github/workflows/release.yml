@@ -34,5 +34,5 @@ jobs:
         with:
           publish: npm run release
         env:
-          # Use the automatic GITHUB_TOKEN provided by the runner
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # GITHUB_TOKEN is passed as NODE_AUTH_TOKEN for npm registry authentication
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

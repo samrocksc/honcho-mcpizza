@@ -1,5 +1,11 @@
 # honcho-mcpizza
 
+## 0.2.0
+
+### Minor Changes
+
+- Add environment variable support for workspace defaults
+
 ## 0.1.5
 
 ### Patch Changes

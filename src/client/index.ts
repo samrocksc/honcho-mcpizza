@@ -4,7 +4,7 @@ import type { HonchoClientError } from "./errors.js";
 
 export const HonchoConfig = Context.GenericTag<Config>("HonchoConfig");
 
-type HonchoClientService = {
+export type HonchoClientService = {
   readonly request: <T>(
     method: string,
     path: string,

@@ -1,7 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { Effect } from "effect";
+import { Effect, Layer } from "effect";
 import { z } from "zod";
-import { HonchoClient } from "../client/index.js";
+import { HonchoClient, type HonchoClientService } from "../client/index.js";
 import type { HonchoClientError } from "../client/errors.js";
 
 const renderTool = <T>(data: T) => ({
@@ -28,7 +28,7 @@ const sessionPeerConfigSchema = z.record(
 
 export const registerSessionTools = (
   server: McpServer,
-  layer: unknown
+  layer: Layer.Layer<HonchoClientService>
 ): void => {
   server.registerTool(
     "session_get_or_create",

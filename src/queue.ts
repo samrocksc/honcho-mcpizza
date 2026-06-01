@@ -8,6 +8,7 @@ export type QueuedConclusion = {
 export type QueuedMessage = {
   readonly content: string;
   readonly peer_id: string;
+  readonly session_id?: string;
   readonly metadata?: Record<string, unknown>;
   readonly created_at?: string;
 };

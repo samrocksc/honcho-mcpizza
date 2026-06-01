@@ -1,5 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { Layer } from "effect";
 import type { Config } from "../config.js";
+import type { HonchoClientService } from "../client/index.js";
 import { registerWorkspaceTools } from "./workspace.js";
 import { registerPeerTools } from "./peer.js";
 import { registerSessionTools } from "./session.js";
@@ -11,15 +13,15 @@ import { registerQueueTools } from "./queue-tools.js";
 
 export const registerAllTools = (
   server: McpServer,
-  layer: unknown,
+  layer: Layer.Layer<HonchoClientService>,
   config: Config
 ): void => {
-  registerWorkspaceTools(server, layer as any);
-  registerPeerTools(server, layer as any);
-  registerSessionTools(server, layer as any);
-  registerMessageTools(server, layer as any);
-  registerConclusionTools(server, layer as any);
-  registerWebhookTools(server, layer as any);
-  registerKeyTools(server, layer as any);
+  registerWorkspaceTools(server, layer);
+  registerPeerTools(server, layer);
+  registerSessionTools(server, layer);
+  registerMessageTools(server, layer);
+  registerConclusionTools(server, layer);
+  registerWebhookTools(server, layer);
+  registerKeyTools(server, layer);
   registerQueueTools(server, config);
 };

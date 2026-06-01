@@ -60,9 +60,17 @@ npm run dev --honcho-url http://localhost:8000
 
 Pass via CLI args or env vars (CLI takes precedence):
 
+**Server connection:**
 - `HONCHO_URL` / `--honcho-url` — Honcho server URL (required)
 - `HONCHO_API_KEY` / `--honcho-api-key` — API key (optional)
+
+**Storage:**
 - `HONCHO_STORAGE_TARGETS` / `--storage-targets` — Where to save conclusions: `peer` (cross-session), `session` (per-conversation), or `peer,session` (both, default)
+
+**Defaults (reduce verbosity in tool calls):**
+- `HONCHO_WORKSPACE_ID` / `--workspace-id` — Default workspace ID for all tool calls
+- `HONCHO_PEER_NAME` / `--peer-name` — Default peer name
+- `HONCHO_AI_PEER` / `--ai-peer` — Default AI peer identifier
 
 ## Tools
 

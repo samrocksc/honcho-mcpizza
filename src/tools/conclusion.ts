@@ -4,6 +4,7 @@ import { Effect } from "effect";
 import { z } from "zod";
 import { HonchoClient, type HonchoClientService } from "../client/index";
 import type { HonchoClientError } from "../client/errors";
+import type { Config } from "../config";
 
 const renderTool = <T>(data: T) => ({
   content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }],
@@ -22,14 +23,15 @@ const renderError = (error: HonchoClientError) => ({
 
 export const registerConclusionTools = (
   server: McpServer,
-  layer: Layer.Layer<HonchoClientService>
+  layer: Layer.Layer<HonchoClientService>,
+  config: Config
 ): void => {
   server.registerTool(
     "conclusion_create",
     {
       description: "Create one or more conclusions (batch, up to 100)",
       inputSchema: z.object({
-        workspace_id: z.string().describe("Workspace ID"),
+        workspace_id: z.string().optional().describe("Workspace ID (uses HONCHO_WORKSPACE_ID if omitted)"),
         conclusions: z.array(
           z.object({
             content: z.string().min(1).max(65535).describe("Conclusion content"),
@@ -44,9 +46,13 @@ export const registerConclusionTools = (
       Effect.runPromise(
         Effect.gen(function* () {
           const client = yield* HonchoClient;
+          const workspaceId = args.workspace_id ?? config.workspaceId;
+          if (!workspaceId) {
+            throw new Error("workspace_id is required (provide as argument or set HONCHO_WORKSPACE_ID env var)");
+          }
           const result = yield* client.request(
             "POST",
-            `/workspaces/${args.workspace_id}/conclusions`,
+            `/workspaces/${workspaceId}/conclusions`,
             { conclusions: args.conclusions }
           );
           return renderTool(result);
@@ -64,7 +70,7 @@ export const registerConclusionTools = (
     {
       description: "List conclusions (paginated)",
       inputSchema: z.object({
-        workspace_id: z.string().describe("Workspace ID"),
+        workspace_id: z.string().optional().describe("Workspace ID (uses HONCHO_WORKSPACE_ID if omitted)"),
         page: z.number().int().positive().default(1),
         size: z.number().int().min(1).max(100).default(50),
         reverse: z.boolean().default(false),
@@ -75,9 +81,13 @@ export const registerConclusionTools = (
       Effect.runPromise(
         Effect.gen(function* () {
           const client = yield* HonchoClient;
+          const workspaceId = args.workspace_id ?? config.workspaceId;
+          if (!workspaceId) {
+            throw new Error("workspace_id is required (provide as argument or set HONCHO_WORKSPACE_ID env var)");
+          }
           const result = yield* client.request(
             "POST",
-            `/workspaces/${args.workspace_id}/conclusions/list`,
+            `/workspaces/${workspaceId}/conclusions/list`,
             { page: args.page, size: args.size, reverse: args.reverse, filters: args.filters }
           );
           return renderTool(result);
@@ -95,7 +105,7 @@ export const registerConclusionTools = (
     {
       description: "Semantic search over conclusions",
       inputSchema: z.object({
-        workspace_id: z.string().describe("Workspace ID"),
+        workspace_id: z.string().optional().describe("Workspace ID (uses HONCHO_WORKSPACE_ID if omitted)"),
         query: z.string().describe("Search query"),
         top_k: z.number().int().min(1).max(100).default(10),
         distance: z.number().min(0).max(1).optional().describe("Max cosine distance"),
@@ -106,9 +116,13 @@ export const registerConclusionTools = (
       Effect.runPromise(
         Effect.gen(function* () {
           const client = yield* HonchoClient;
+          const workspaceId = args.workspace_id ?? config.workspaceId;
+          if (!workspaceId) {
+            throw new Error("workspace_id is required (provide as argument or set HONCHO_WORKSPACE_ID env var)");
+          }
           const result = yield* client.request(
             "POST",
-            `/workspaces/${args.workspace_id}/conclusions/query`,
+            `/workspaces/${workspaceId}/conclusions/query`,
             { query: args.query, top_k: args.top_k, distance: args.distance, filters: args.filters }
           );
           return renderTool(result);
@@ -126,7 +140,7 @@ export const registerConclusionTools = (
     {
       description: "Delete a single conclusion",
       inputSchema: z.object({
-        workspace_id: z.string().describe("Workspace ID"),
+        workspace_id: z.string().optional().describe("Workspace ID (uses HONCHO_WORKSPACE_ID if omitted)"),
         conclusion_id: z.string().describe("Conclusion ID"),
       }),
     },
@@ -134,9 +148,13 @@ export const registerConclusionTools = (
       Effect.runPromise(
         Effect.gen(function* () {
           const client = yield* HonchoClient;
+          const workspaceId = args.workspace_id ?? config.workspaceId;
+          if (!workspaceId) {
+            throw new Error("workspace_id is required (provide as argument or set HONCHO_WORKSPACE_ID env var)");
+          }
           yield* client.request(
             "DELETE",
-            `/workspaces/${args.workspace_id}/conclusions/${args.conclusion_id}`
+            `/workspaces/${workspaceId}/conclusions/${args.conclusion_id}`
           );
           return renderTool({ status: "deleted" });
         }).pipe(

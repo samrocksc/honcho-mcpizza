@@ -4,6 +4,7 @@ import { Effect } from "effect";
 import { z } from "zod";
 import { HonchoClient, type HonchoClientService } from "../client/index";
 import type { HonchoClientError } from "../client/errors";
+import type { Config } from "../config";
 
 const renderTool = <T>(data: T) => ({
   content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }],
@@ -22,14 +23,15 @@ const renderError = (error: HonchoClientError) => ({
 
 export const registerPeerTools = (
   server: McpServer,
-  layer: Layer.Layer<HonchoClientService>
+  layer: Layer.Layer<HonchoClientService>,
+  config: Config
 ): void => {
   server.registerTool(
     "peer_get_or_create",
     {
       description: "Get or create a peer in a workspace",
       inputSchema: z.object({
-        workspace_id: z.string().describe("Workspace ID"),
+        workspace_id: z.string().optional().describe("Workspace ID (uses HONCHO_WORKSPACE_ID if omitted)"),
         id: z.string().describe("Unique peer identifier"),
         metadata: z.record(z.unknown()).optional().describe("Optional metadata"),
         configuration: z.record(z.unknown()).optional().describe("Optional configuration"),
@@ -39,9 +41,13 @@ export const registerPeerTools = (
       Effect.runPromise(
         Effect.gen(function* () {
           const client = yield* HonchoClient;
+          const workspaceId = args.workspace_id ?? config.workspaceId;
+          if (!workspaceId) {
+            throw new Error("workspace_id is required (provide as argument or set HONCHO_WORKSPACE_ID env var)");
+          }
           const result = yield* client.request(
             "POST",
-            `/workspaces/${args.workspace_id}/peers`,
+            `/workspaces/${workspaceId}/peers`,
             { id: args.id, metadata: args.metadata, configuration: args.configuration }
           );
           return renderTool(result);
@@ -59,7 +65,7 @@ export const registerPeerTools = (
     {
       description: "List all peers in a workspace",
       inputSchema: z.object({
-        workspace_id: z.string().describe("Workspace ID"),
+        workspace_id: z.string().optional().describe("Workspace ID (uses HONCHO_WORKSPACE_ID if omitted)"),
         page: z.number().int().positive().default(1),
         size: z.number().int().min(1).max(100).default(50),
       }),
@@ -68,9 +74,13 @@ export const registerPeerTools = (
       Effect.runPromise(
         Effect.gen(function* () {
           const client = yield* HonchoClient;
+          const workspaceId = args.workspace_id ?? config.workspaceId;
+          if (!workspaceId) {
+            throw new Error("workspace_id is required (provide as argument or set HONCHO_WORKSPACE_ID env var)");
+          }
           const result = yield* client.request(
             "POST",
-            `/workspaces/${args.workspace_id}/peers/list`,
+            `/workspaces/${workspaceId}/peers/list`,
             { page: args.page, size: args.size }
           );
           return renderTool(result);
@@ -88,7 +98,7 @@ export const registerPeerTools = (
     {
       description: "Update peer metadata or configuration",
       inputSchema: z.object({
-        workspace_id: z.string().describe("Workspace ID"),
+        workspace_id: z.string().optional().describe("Workspace ID (uses HONCHO_WORKSPACE_ID if omitted)"),
         peer_id: z.string().describe("Peer ID"),
         metadata: z.record(z.unknown()).optional().describe("New metadata"),
         configuration: z.record(z.unknown()).optional().describe("New configuration"),
@@ -98,9 +108,13 @@ export const registerPeerTools = (
       Effect.runPromise(
         Effect.gen(function* () {
           const client = yield* HonchoClient;
+          const workspaceId = args.workspace_id ?? config.workspaceId;
+          if (!workspaceId) {
+            throw new Error("workspace_id is required (provide as argument or set HONCHO_WORKSPACE_ID env var)");
+          }
           const result = yield* client.request(
             "PUT",
-            `/workspaces/${args.workspace_id}/peers/${args.peer_id}`,
+            `/workspaces/${workspaceId}/peers/${args.peer_id}`,
             { metadata: args.metadata, configuration: args.configuration }
           );
           return renderTool(result);
@@ -118,7 +132,7 @@ export const registerPeerTools = (
     {
       description: "List sessions for a peer",
       inputSchema: z.object({
-        workspace_id: z.string().describe("Workspace ID"),
+        workspace_id: z.string().optional().describe("Workspace ID (uses HONCHO_WORKSPACE_ID if omitted)"),
         peer_id: z.string().describe("Peer ID"),
         page: z.number().int().positive().default(1),
         size: z.number().int().min(1).max(100).default(50),
@@ -128,9 +142,13 @@ export const registerPeerTools = (
       Effect.runPromise(
         Effect.gen(function* () {
           const client = yield* HonchoClient;
+          const workspaceId = args.workspace_id ?? config.workspaceId;
+          if (!workspaceId) {
+            throw new Error("workspace_id is required (provide as argument or set HONCHO_WORKSPACE_ID env var)");
+          }
           const result = yield* client.request(
             "POST",
-            `/workspaces/${args.workspace_id}/peers/${args.peer_id}/sessions`,
+            `/workspaces/${workspaceId}/peers/${args.peer_id}/sessions`,
             { page: args.page, size: args.size }
           );
           return renderTool(result);
@@ -148,7 +166,7 @@ export const registerPeerTools = (
     {
       description: "Query peer representation via natural language (dialectic reasoning)",
       inputSchema: z.object({
-        workspace_id: z.string().describe("Workspace ID"),
+        workspace_id: z.string().optional().describe("Workspace ID (uses HONCHO_WORKSPACE_ID if omitted)"),
         peer_id: z.string().describe("Peer ID"),
         query: z.string().min(1).max(10000).describe("Natural language query"),
         session_id: z.string().optional().describe("Optional session ID for context"),
@@ -160,9 +178,13 @@ export const registerPeerTools = (
       Effect.runPromise(
         Effect.gen(function* () {
           const client = yield* HonchoClient;
+          const workspaceId = args.workspace_id ?? config.workspaceId;
+          if (!workspaceId) {
+            throw new Error("workspace_id is required (provide as argument or set HONCHO_WORKSPACE_ID env var)");
+          }
           const result = yield* client.request(
             "POST",
-            `/workspaces/${args.workspace_id}/peers/${args.peer_id}/chat`,
+            `/workspaces/${workspaceId}/peers/${args.peer_id}/chat`,
             {
               query: args.query,
               session_id: args.session_id,
@@ -186,7 +208,7 @@ export const registerPeerTools = (
     {
       description: "Get curated peer representation",
       inputSchema: z.object({
-        workspace_id: z.string().describe("Workspace ID"),
+        workspace_id: z.string().optional().describe("Workspace ID (uses HONCHO_WORKSPACE_ID if omitted)"),
         peer_id: z.string().describe("Peer ID"),
         session_id: z.string().optional(),
         target: z.string().optional(),
@@ -201,9 +223,13 @@ export const registerPeerTools = (
       Effect.runPromise(
         Effect.gen(function* () {
           const client = yield* HonchoClient;
+          const workspaceId = args.workspace_id ?? config.workspaceId;
+          if (!workspaceId) {
+            throw new Error("workspace_id is required (provide as argument or set HONCHO_WORKSPACE_ID env var)");
+          }
           const result = yield* client.request(
             "POST",
-            `/workspaces/${args.workspace_id}/peers/${args.peer_id}/representation`,
+            `/workspaces/${workspaceId}/peers/${args.peer_id}/representation`,
             {
               session_id: args.session_id,
               target: args.target,
@@ -229,7 +255,7 @@ export const registerPeerTools = (
     {
       description: "Get peer card",
       inputSchema: z.object({
-        workspace_id: z.string().describe("Workspace ID"),
+        workspace_id: z.string().optional().describe("Workspace ID (uses HONCHO_WORKSPACE_ID if omitted)"),
         peer_id: z.string().describe("Peer ID"),
         target: z.string().optional().describe("Observer's peer ID for perspective"),
       }),
@@ -238,12 +264,16 @@ export const registerPeerTools = (
       Effect.runPromise(
         Effect.gen(function* () {
           const client = yield* HonchoClient;
+          const workspaceId = args.workspace_id ?? config.workspaceId;
+          if (!workspaceId) {
+            throw new Error("workspace_id is required (provide as argument or set HONCHO_WORKSPACE_ID env var)");
+          }
           const params = new URLSearchParams();
           if (args.target) params.append("target", args.target);
           const query = params.toString() ? `?${params.toString()}` : "";
           const result = yield* client.request(
             "GET",
-            `/workspaces/${args.workspace_id}/peers/${args.peer_id}/card${query}`
+            `/workspaces/${workspaceId}/peers/${args.peer_id}/card${query}`
           );
           return renderTool(result);
         }).pipe(
@@ -260,7 +290,7 @@ export const registerPeerTools = (
     {
       description: "Set (overwrite) peer card",
       inputSchema: z.object({
-        workspace_id: z.string().describe("Workspace ID"),
+        workspace_id: z.string().optional().describe("Workspace ID (uses HONCHO_WORKSPACE_ID if omitted)"),
         peer_id: z.string().describe("Peer ID"),
         peer_card: z.array(z.string()).describe("Array of peer card items"),
         target: z.string().optional().describe("Observer's peer ID for perspective"),
@@ -270,12 +300,16 @@ export const registerPeerTools = (
       Effect.runPromise(
         Effect.gen(function* () {
           const client = yield* HonchoClient;
+          const workspaceId = args.workspace_id ?? config.workspaceId;
+          if (!workspaceId) {
+            throw new Error("workspace_id is required (provide as argument or set HONCHO_WORKSPACE_ID env var)");
+          }
           const params = new URLSearchParams();
           if (args.target) params.append("target", args.target);
           const query = params.toString() ? `?${params.toString()}` : "";
           const result = yield* client.request(
             "PUT",
-            `/workspaces/${args.workspace_id}/peers/${args.peer_id}/card${query}`,
+            `/workspaces/${workspaceId}/peers/${args.peer_id}/card${query}`,
             { peer_card: args.peer_card }
           );
           return renderTool(result);
@@ -293,7 +327,7 @@ export const registerPeerTools = (
     {
       description: "Get combined context (representation + card)",
       inputSchema: z.object({
-        workspace_id: z.string().describe("Workspace ID"),
+        workspace_id: z.string().optional().describe("Workspace ID (uses HONCHO_WORKSPACE_ID if omitted)"),
         peer_id: z.string().describe("Peer ID"),
         target: z.string().optional(),
         search_query: z.string().optional(),
@@ -307,6 +341,10 @@ export const registerPeerTools = (
       Effect.runPromise(
         Effect.gen(function* () {
           const client = yield* HonchoClient;
+          const workspaceId = args.workspace_id ?? config.workspaceId;
+          if (!workspaceId) {
+            throw new Error("workspace_id is required (provide as argument or set HONCHO_WORKSPACE_ID env var)");
+          }
           const params = new URLSearchParams();
           if (args.target) params.append("target", args.target);
           if (args.search_query) params.append("search_query", args.search_query);
@@ -317,7 +355,7 @@ export const registerPeerTools = (
           const query = params.toString() ? `?${params.toString()}` : "";
           const result = yield* client.request(
             "GET",
-            `/workspaces/${args.workspace_id}/peers/${args.peer_id}/context${query}`
+            `/workspaces/${workspaceId}/peers/${args.peer_id}/context${query}`
           );
           return renderTool(result);
         }).pipe(
@@ -334,7 +372,7 @@ export const registerPeerTools = (
     {
       description: "Search a peer's messages",
       inputSchema: z.object({
-        workspace_id: z.string().describe("Workspace ID"),
+        workspace_id: z.string().optional().describe("Workspace ID (uses HONCHO_WORKSPACE_ID if omitted)"),
         peer_id: z.string().describe("Peer ID"),
         query: z.string().describe("Search query"),
         limit: z.number().int().min(1).max(100).default(10),
@@ -345,9 +383,13 @@ export const registerPeerTools = (
       Effect.runPromise(
         Effect.gen(function* () {
           const client = yield* HonchoClient;
+          const workspaceId = args.workspace_id ?? config.workspaceId;
+          if (!workspaceId) {
+            throw new Error("workspace_id is required (provide as argument or set HONCHO_WORKSPACE_ID env var)");
+          }
           const result = yield* client.request(
             "POST",
-            `/workspaces/${args.workspace_id}/peers/${args.peer_id}/search`,
+            `/workspaces/${workspaceId}/peers/${args.peer_id}/search`,
             { query: args.query, limit: args.limit, filters: args.filters }
           );
           return renderTool(result);

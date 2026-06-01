@@ -236,16 +236,17 @@ The workspace ID persists—future calls with the same name get the same workspa
 
 CLI args take precedence over env vars.
 
-### Default Workspace
+### Default Values (Workspace, Peer, AI Peer)
 
-Set a default workspace ID so you don't have to pass it every time:
+Set defaults via CLI args or env vars so you don't have to pass them every time:
 
+**Via CLI args:**
 ```json
 {
   "mcpServers": {
     "honcho": {
       "command": "npx",
-      "args": ["-y", "github:samrocksc/honcho-mcpizza", "--honcho-url", "http://your-honcho-server:8000", "--workspace-id", "ws_my_app"],
+      "args": ["-y", "github:samrocksc/honcho-mcpizza", "--honcho-url", "http://your-honcho-server:8000", "--workspace-id", "ws_my_app", "--peer-name", "alice", "--ai-peer", "claude"],
       "env": {
         "HONCHO_API_KEY": "your-api-key"
       }
@@ -254,14 +255,29 @@ Set a default workspace ID so you don't have to pass it every time:
 }
 ```
 
-Or via env var:
+**Via env vars:**
 ```json
 {
-  "env": {
-    "HONCHO_WORKSPACE_ID": "ws_my_app"
+  "mcpServers": {
+    "honcho": {
+      "command": "npx",
+      "args": ["-y", "github:samrocksc/honcho-mcpizza", "--honcho-url", "http://your-honcho-server:8000"],
+      "env": {
+        "HONCHO_WORKSPACE_ID": "ws_my_app",
+        "HONCHO_PEER_NAME": "alice",
+        "HONCHO_AI_PEER": "claude",
+        "HONCHO_API_KEY": "your-api-key"
+      }
+    }
   }
 }
 ```
+
+**How it works:**
+- `workspace_id` defaults to `HONCHO_WORKSPACE_ID` if not specified in a tool call
+- `peer_name` defaults to `HONCHO_PEER_NAME` if not specified
+- `ai_peer` defaults to `HONCHO_AI_PEER` if not specified
+- Pass values directly to tool calls to override defaults
 
 ## Example: Query Memory
 

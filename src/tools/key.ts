@@ -4,6 +4,7 @@ import { Effect } from "effect";
 import { z } from "zod";
 import { HonchoClient, type HonchoClientService } from "../client/index";
 import type { HonchoClientError } from "../client/errors";
+import type { Config } from "../config";
 
 const renderTool = <T>(data: T) => ({
   content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }],
@@ -22,7 +23,8 @@ const renderError = (error: HonchoClientError) => ({
 
 export const registerKeyTools = (
   server: McpServer,
-  layer: Layer.Layer<HonchoClientService>
+  layer: Layer.Layer<HonchoClientService>,
+  config: Config
 ): void => {
   server.registerTool(
     "key_create",

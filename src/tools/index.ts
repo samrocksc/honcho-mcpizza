@@ -16,12 +16,12 @@ export const registerAllTools = (
   layer: Layer.Layer<HonchoClientService>,
   config: Config
 ): void => {
-  registerWorkspaceTools(server, layer);
-  registerPeerTools(server, layer);
-  registerSessionTools(server, layer);
-  registerMessageTools(server, layer);
-  registerConclusionTools(server, layer);
-  registerWebhookTools(server, layer);
-  registerKeyTools(server, layer);
+  registerWorkspaceTools(server, layer, config);
+  registerPeerTools(server, layer, config);
+  registerSessionTools(server, layer, config);
+  registerMessageTools(server, layer, config);
+  registerConclusionTools(server, layer, config);
+  registerWebhookTools(server, layer, config);
+  registerKeyTools(server, layer, config);
   registerQueueTools(server, config);
 };

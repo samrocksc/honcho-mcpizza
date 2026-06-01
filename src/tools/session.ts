@@ -4,6 +4,7 @@ import { Effect } from "effect";
 import { z } from "zod";
 import { HonchoClient, type HonchoClientService } from "../client/index";
 import type { HonchoClientError } from "../client/errors";
+import type { Config } from "../config";
 
 const renderTool = <T>(data: T) => ({
   content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }],
@@ -29,14 +30,15 @@ const sessionPeerConfigSchema = z.record(
 
 export const registerSessionTools = (
   server: McpServer,
-  layer: Layer.Layer<HonchoClientService>
+  layer: Layer.Layer<HonchoClientService>,
+  config: Config
 ): void => {
   server.registerTool(
     "session_get_or_create",
     {
       description: "Get or create a session",
       inputSchema: z.object({
-        workspace_id: z.string().describe("Workspace ID"),
+        workspace_id: z.string().optional().describe("Workspace ID (uses HONCHO_WORKSPACE_ID if omitted)"),
         id: z.string().describe("Unique session identifier"),
         metadata: z.record(z.unknown()).optional(),
         peers: sessionPeerConfigSchema.optional(),
@@ -47,9 +49,13 @@ export const registerSessionTools = (
       Effect.runPromise(
         Effect.gen(function* () {
           const client = yield* HonchoClient;
+          const workspaceId = args.workspace_id ?? config.workspaceId;
+          if (!workspaceId) {
+            throw new Error("workspace_id is required (provide as argument or set HONCHO_WORKSPACE_ID env var)");
+          }
           const result = yield* client.request(
             "POST",
-            `/workspaces/${args.workspace_id}/sessions`,
+            `/workspaces/${workspaceId}/sessions`,
             {
               id: args.id,
               metadata: args.metadata,
@@ -72,7 +78,7 @@ export const registerSessionTools = (
     {
       description: "List all sessions in a workspace",
       inputSchema: z.object({
-        workspace_id: z.string().describe("Workspace ID"),
+        workspace_id: z.string().optional().describe("Workspace ID (uses HONCHO_WORKSPACE_ID if omitted)"),
         page: z.number().int().positive().default(1),
         size: z.number().int().min(1).max(100).default(50),
       }),
@@ -81,9 +87,13 @@ export const registerSessionTools = (
       Effect.runPromise(
         Effect.gen(function* () {
           const client = yield* HonchoClient;
+          const workspaceId = args.workspace_id ?? config.workspaceId;
+          if (!workspaceId) {
+            throw new Error("workspace_id is required (provide as argument or set HONCHO_WORKSPACE_ID env var)");
+          }
           const result = yield* client.request(
             "POST",
-            `/workspaces/${args.workspace_id}/sessions/list`,
+            `/workspaces/${workspaceId}/sessions/list`,
             { page: args.page, size: args.size }
           );
           return renderTool(result);
@@ -101,7 +111,7 @@ export const registerSessionTools = (
     {
       description: "Update session metadata or configuration",
       inputSchema: z.object({
-        workspace_id: z.string().describe("Workspace ID"),
+        workspace_id: z.string().optional().describe("Workspace ID (uses HONCHO_WORKSPACE_ID if omitted)"),
         session_id: z.string().describe("Session ID"),
         metadata: z.record(z.unknown()).optional(),
         configuration: z.record(z.unknown()).optional(),
@@ -111,9 +121,13 @@ export const registerSessionTools = (
       Effect.runPromise(
         Effect.gen(function* () {
           const client = yield* HonchoClient;
+          const workspaceId = args.workspace_id ?? config.workspaceId;
+          if (!workspaceId) {
+            throw new Error("workspace_id is required (provide as argument or set HONCHO_WORKSPACE_ID env var)");
+          }
           const result = yield* client.request(
             "PUT",
-            `/workspaces/${args.workspace_id}/sessions/${args.session_id}`,
+            `/workspaces/${workspaceId}/sessions/${args.session_id}`,
             { metadata: args.metadata, configuration: args.configuration }
           );
           return renderTool(result);
@@ -131,7 +145,7 @@ export const registerSessionTools = (
     {
       description: "Delete a session (async)",
       inputSchema: z.object({
-        workspace_id: z.string().describe("Workspace ID"),
+        workspace_id: z.string().optional().describe("Workspace ID (uses HONCHO_WORKSPACE_ID if omitted)"),
         session_id: z.string().describe("Session ID"),
       }),
     },
@@ -139,9 +153,13 @@ export const registerSessionTools = (
       Effect.runPromise(
         Effect.gen(function* () {
           const client = yield* HonchoClient;
+          const workspaceId = args.workspace_id ?? config.workspaceId;
+          if (!workspaceId) {
+            throw new Error("workspace_id is required (provide as argument or set HONCHO_WORKSPACE_ID env var)");
+          }
           yield* client.request(
             "DELETE",
-            `/workspaces/${args.workspace_id}/sessions/${args.session_id}`
+            `/workspaces/${workspaceId}/sessions/${args.session_id}`
           );
           return renderTool({ status: "accepted" });
         }).pipe(
@@ -158,7 +176,7 @@ export const registerSessionTools = (
     {
       description: "Clone a session (optionally up to a message_id)",
       inputSchema: z.object({
-        workspace_id: z.string().describe("Workspace ID"),
+        workspace_id: z.string().optional().describe("Workspace ID (uses HONCHO_WORKSPACE_ID if omitted)"),
         session_id: z.string().describe("Session ID to clone"),
         message_id: z.string().optional().describe("Cut-off message ID"),
       }),
@@ -167,12 +185,16 @@ export const registerSessionTools = (
       Effect.runPromise(
         Effect.gen(function* () {
           const client = yield* HonchoClient;
+          const workspaceId = args.workspace_id ?? config.workspaceId;
+          if (!workspaceId) {
+            throw new Error("workspace_id is required (provide as argument or set HONCHO_WORKSPACE_ID env var)");
+          }
           const params = new URLSearchParams();
           if (args.message_id) params.append("message_id", args.message_id);
           const query = params.toString() ? `?${params.toString()}` : "";
           const result = yield* client.request(
             "POST",
-            `/workspaces/${args.workspace_id}/sessions/${args.session_id}/clone${query}`
+            `/workspaces/${workspaceId}/sessions/${args.session_id}/clone${query}`
           );
           return renderTool(result);
         }).pipe(
@@ -189,7 +211,7 @@ export const registerSessionTools = (
     {
       description: "Add peers to a session",
       inputSchema: z.object({
-        workspace_id: z.string().describe("Workspace ID"),
+        workspace_id: z.string().optional().describe("Workspace ID (uses HONCHO_WORKSPACE_ID if omitted)"),
         session_id: z.string().describe("Session ID"),
         peers: sessionPeerConfigSchema.describe("Peer configs"),
       }),
@@ -198,9 +220,13 @@ export const registerSessionTools = (
       Effect.runPromise(
         Effect.gen(function* () {
           const client = yield* HonchoClient;
+          const workspaceId = args.workspace_id ?? config.workspaceId;
+          if (!workspaceId) {
+            throw new Error("workspace_id is required (provide as argument or set HONCHO_WORKSPACE_ID env var)");
+          }
           const result = yield* client.request(
             "POST",
-            `/workspaces/${args.workspace_id}/sessions/${args.session_id}/peers`,
+            `/workspaces/${workspaceId}/sessions/${args.session_id}/peers`,
             args.peers
           );
           return renderTool(result);
@@ -218,7 +244,7 @@ export const registerSessionTools = (
     {
       description: "Set (replace) peers in a session",
       inputSchema: z.object({
-        workspace_id: z.string().describe("Workspace ID"),
+        workspace_id: z.string().optional().describe("Workspace ID (uses HONCHO_WORKSPACE_ID if omitted)"),
         session_id: z.string().describe("Session ID"),
         peers: sessionPeerConfigSchema.describe("New peer configs"),
       }),
@@ -227,9 +253,13 @@ export const registerSessionTools = (
       Effect.runPromise(
         Effect.gen(function* () {
           const client = yield* HonchoClient;
+          const workspaceId = args.workspace_id ?? config.workspaceId;
+          if (!workspaceId) {
+            throw new Error("workspace_id is required (provide as argument or set HONCHO_WORKSPACE_ID env var)");
+          }
           const result = yield* client.request(
             "PUT",
-            `/workspaces/${args.workspace_id}/sessions/${args.session_id}/peers`,
+            `/workspaces/${workspaceId}/sessions/${args.session_id}/peers`,
             args.peers
           );
           return renderTool(result);
@@ -247,7 +277,7 @@ export const registerSessionTools = (
     {
       description: "Remove peers from a session",
       inputSchema: z.object({
-        workspace_id: z.string().describe("Workspace ID"),
+        workspace_id: z.string().optional().describe("Workspace ID (uses HONCHO_WORKSPACE_ID if omitted)"),
         session_id: z.string().describe("Session ID"),
         peer_ids: z.array(z.string()).describe("Peer IDs to remove"),
       }),
@@ -256,9 +286,13 @@ export const registerSessionTools = (
       Effect.runPromise(
         Effect.gen(function* () {
           const client = yield* HonchoClient;
+          const workspaceId = args.workspace_id ?? config.workspaceId;
+          if (!workspaceId) {
+            throw new Error("workspace_id is required (provide as argument or set HONCHO_WORKSPACE_ID env var)");
+          }
           const result = yield* client.request(
             "DELETE",
-            `/workspaces/${args.workspace_id}/sessions/${args.session_id}/peers`,
+            `/workspaces/${workspaceId}/sessions/${args.session_id}/peers`,
             args.peer_ids
           );
           return renderTool(result);
@@ -276,7 +310,7 @@ export const registerSessionTools = (
     {
       description: "List peers in a session",
       inputSchema: z.object({
-        workspace_id: z.string().describe("Workspace ID"),
+        workspace_id: z.string().optional().describe("Workspace ID (uses HONCHO_WORKSPACE_ID if omitted)"),
         session_id: z.string().describe("Session ID"),
         page: z.number().int().positive().default(1),
         size: z.number().int().min(1).max(100).default(50),
@@ -286,12 +320,16 @@ export const registerSessionTools = (
       Effect.runPromise(
         Effect.gen(function* () {
           const client = yield* HonchoClient;
+          const workspaceId = args.workspace_id ?? config.workspaceId;
+          if (!workspaceId) {
+            throw new Error("workspace_id is required (provide as argument or set HONCHO_WORKSPACE_ID env var)");
+          }
           const params = new URLSearchParams();
           params.append("page", args.page.toString());
           params.append("size", args.size.toString());
           const result = yield* client.request(
             "GET",
-            `/workspaces/${args.workspace_id}/sessions/${args.session_id}/peers?${params.toString()}`
+            `/workspaces/${workspaceId}/sessions/${args.session_id}/peers?${params.toString()}`
           );
           return renderTool(result);
         }).pipe(
@@ -308,7 +346,7 @@ export const registerSessionTools = (
     {
       description: "Get peer config within a session",
       inputSchema: z.object({
-        workspace_id: z.string().describe("Workspace ID"),
+        workspace_id: z.string().optional().describe("Workspace ID (uses HONCHO_WORKSPACE_ID if omitted)"),
         session_id: z.string().describe("Session ID"),
         peer_id: z.string().describe("Peer ID"),
       }),
@@ -317,9 +355,13 @@ export const registerSessionTools = (
       Effect.runPromise(
         Effect.gen(function* () {
           const client = yield* HonchoClient;
+          const workspaceId = args.workspace_id ?? config.workspaceId;
+          if (!workspaceId) {
+            throw new Error("workspace_id is required (provide as argument or set HONCHO_WORKSPACE_ID env var)");
+          }
           const result = yield* client.request(
             "GET",
-            `/workspaces/${args.workspace_id}/sessions/${args.session_id}/peers/${args.peer_id}/config`
+            `/workspaces/${workspaceId}/sessions/${args.session_id}/peers/${args.peer_id}/config`
           );
           return renderTool(result);
         }).pipe(
@@ -336,7 +378,7 @@ export const registerSessionTools = (
     {
       description: "Set peer config within a session",
       inputSchema: z.object({
-        workspace_id: z.string().describe("Workspace ID"),
+        workspace_id: z.string().optional().describe("Workspace ID (uses HONCHO_WORKSPACE_ID if omitted)"),
         session_id: z.string().describe("Session ID"),
         peer_id: z.string().describe("Peer ID"),
         config: z.object({
@@ -349,9 +391,13 @@ export const registerSessionTools = (
       Effect.runPromise(
         Effect.gen(function* () {
           const client = yield* HonchoClient;
+          const workspaceId = args.workspace_id ?? config.workspaceId;
+          if (!workspaceId) {
+            throw new Error("workspace_id is required (provide as argument or set HONCHO_WORKSPACE_ID env var)");
+          }
           const result = yield* client.request(
             "PUT",
-            `/workspaces/${args.workspace_id}/sessions/${args.session_id}/peers/${args.peer_id}/config`,
+            `/workspaces/${workspaceId}/sessions/${args.session_id}/peers/${args.peer_id}/config`,
             args.config
           );
           return renderTool(result);
@@ -369,7 +415,7 @@ export const registerSessionTools = (
     {
       description: "Get session context (messages + optional summary + optional peer representation)",
       inputSchema: z.object({
-        workspace_id: z.string().describe("Workspace ID"),
+        workspace_id: z.string().optional().describe("Workspace ID (uses HONCHO_WORKSPACE_ID if omitted)"),
         session_id: z.string().describe("Session ID"),
         tokens: z.number().int().max(100000).optional().describe("Token budget"),
         summary: z.boolean().default(true).describe("Include summary if available"),
@@ -387,6 +433,10 @@ export const registerSessionTools = (
       Effect.runPromise(
         Effect.gen(function* () {
           const client = yield* HonchoClient;
+          const workspaceId = args.workspace_id ?? config.workspaceId;
+          if (!workspaceId) {
+            throw new Error("workspace_id is required (provide as argument or set HONCHO_WORKSPACE_ID env var)");
+          }
           const params = new URLSearchParams();
           if (args.tokens) params.append("tokens", args.tokens.toString());
           params.append("summary", args.summary.toString());
@@ -400,7 +450,7 @@ export const registerSessionTools = (
           if (args.max_conclusions) params.append("max_conclusions", args.max_conclusions.toString());
           const result = yield* client.request(
             "GET",
-            `/workspaces/${args.workspace_id}/sessions/${args.session_id}/context?${params.toString()}`
+            `/workspaces/${workspaceId}/sessions/${args.session_id}/context?${params.toString()}`
           );
           return renderTool(result);
         }).pipe(
@@ -417,7 +467,7 @@ export const registerSessionTools = (
     {
       description: "Get short and long summaries for a session",
       inputSchema: z.object({
-        workspace_id: z.string().describe("Workspace ID"),
+        workspace_id: z.string().optional().describe("Workspace ID (uses HONCHO_WORKSPACE_ID if omitted)"),
         session_id: z.string().describe("Session ID"),
       }),
     },
@@ -425,9 +475,13 @@ export const registerSessionTools = (
       Effect.runPromise(
         Effect.gen(function* () {
           const client = yield* HonchoClient;
+          const workspaceId = args.workspace_id ?? config.workspaceId;
+          if (!workspaceId) {
+            throw new Error("workspace_id is required (provide as argument or set HONCHO_WORKSPACE_ID env var)");
+          }
           const result = yield* client.request(
             "GET",
-            `/workspaces/${args.workspace_id}/sessions/${args.session_id}/summaries`
+            `/workspaces/${workspaceId}/sessions/${args.session_id}/summaries`
           );
           return renderTool(result);
         }).pipe(
@@ -444,7 +498,7 @@ export const registerSessionTools = (
     {
       description: "Semantic/full-text search within a session",
       inputSchema: z.object({
-        workspace_id: z.string().describe("Workspace ID"),
+        workspace_id: z.string().optional().describe("Workspace ID (uses HONCHO_WORKSPACE_ID if omitted)"),
         session_id: z.string().describe("Session ID"),
         query: z.string().describe("Search query"),
         limit: z.number().int().min(1).max(100).default(10),
@@ -455,9 +509,13 @@ export const registerSessionTools = (
       Effect.runPromise(
         Effect.gen(function* () {
           const client = yield* HonchoClient;
+          const workspaceId = args.workspace_id ?? config.workspaceId;
+          if (!workspaceId) {
+            throw new Error("workspace_id is required (provide as argument or set HONCHO_WORKSPACE_ID env var)");
+          }
           const result = yield* client.request(
             "POST",
-            `/workspaces/${args.workspace_id}/sessions/${args.session_id}/search`,
+            `/workspaces/${workspaceId}/sessions/${args.session_id}/search`,
             { query: args.query, limit: args.limit, filters: args.filters }
           );
           return renderTool(result);

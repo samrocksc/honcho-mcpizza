@@ -6,6 +6,9 @@ export type Config = {
   readonly honchoUrl: string;
   readonly honchoApiKey?: string;
   readonly storageTargets: readonly StorageTarget[];
+  readonly workspaceId?: string;
+  readonly peerName?: string;
+  readonly aiPeer?: string;
 };
 
 const parseStorageTargets = (input: string): StorageTarget[] => {
@@ -26,6 +29,9 @@ export const parseConfig = (): Config => {
       "honcho-url": { type: "string" },
       "honcho-api-key": { type: "string" },
       "storage-targets": { type: "string" },
+      "workspace-id": { type: "string" },
+      "peer-name": { type: "string" },
+      "ai-peer": { type: "string" },
     },
     strict: false,
   });
@@ -48,5 +54,14 @@ export const parseConfig = (): Config => {
       (values["honcho-api-key"] as string | undefined) ??
       process.env["HONCHO_API_KEY"],
     storageTargets: parseStorageTargets(storageTargetsStr),
+    workspaceId:
+      (values["workspace-id"] as string | undefined) ??
+      process.env["HONCHO_WORKSPACE_ID"],
+    peerName:
+      (values["peer-name"] as string | undefined) ??
+      process.env["HONCHO_PEER_NAME"],
+    aiPeer:
+      (values["ai-peer"] as string | undefined) ??
+      process.env["HONCHO_AI_PEER"],
   };
 };

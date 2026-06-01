@@ -17,7 +17,7 @@
     ".": "./dist/index.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "esbuild src/index.ts --bundle --platform=node --format=esm --external:@modelcontextprotocol/sdk --external:effect --external:zod --outfile=dist/index.js && echo '#!/usr/bin/env node' | cat - dist/index.js > dist/index.js.tmp && mv dist/index.js.tmp dist/index.js && chmod +x dist/index.js",
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
@@ -38,9 +38,13 @@
   "devDependencies": {
     "@changesets/cli": "^2.31.0",
     "@eslint/js": "^9.0.0",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@rollup/plugin-typescript": "^12.3.0",
     "@types/node": "^22.0.0",
     "eslint": "^9.0.0",
     "eslint-plugin-functional": "^7.0.0",
+    "rollup": "^4.61.0",
+    "tslib": "^2.8.1",
     "tsx": "^4.0.0",
     "typescript": "^5.8.0",
     "typescript-eslint": "^8.0.0"

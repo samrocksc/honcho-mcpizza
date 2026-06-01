@@ -1,5 +1,5 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
-import { Layer } from "effect";
+import type { Layer } from "effect";
 import type { Config } from "../config";
 import type { HonchoClientService } from "../client/index";
 import { registerWorkspaceTools } from "./workspace";

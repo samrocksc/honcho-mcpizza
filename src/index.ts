@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { Layer } from "effect";
-import { parseConfig } from "./config.js";
-import { HonchoClientLayer, HonchoConfig } from "./client/index.js";
-import { registerAllTools } from "./tools/index.js";
+import { parseConfig } from "./config";
+import { HonchoClientLayer, HonchoConfig } from "./client/index";
+import { registerAllTools } from "./tools/index";
 
 const main = async (): Promise<void> => {
   try {

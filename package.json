@@ -1,6 +1,6 @@
 {
   "name": "@samrocksc/honcho-mcpizza",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Honcho MCP server for Claude Desktop",
   "type": "module",
   "bin": {

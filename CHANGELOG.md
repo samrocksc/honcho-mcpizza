@@ -1,5 +1,11 @@
 # honcho-mcpizza
 
+## 0.1.5
+
+### Patch Changes
+
+- Add workspace ID documentation and examples
+
 ## 0.1.4
 
 ### Patch Changes

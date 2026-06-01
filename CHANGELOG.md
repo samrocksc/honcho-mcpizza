@@ -1,5 +1,11 @@
 # honcho-mcpizza
 
+## 0.2.1
+
+### Patch Changes
+
+- Configure GitHub Packages for release workflow
+
 ## 0.2.0
 
 ### Minor Changes

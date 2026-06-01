@@ -1,6 +1,6 @@
 import { Effect } from "effect";
 import { z } from "zod";
-import { HonchoClient } from "../client/index.js";
+import { HonchoClient } from "../client/index";
 const renderTool = (data) => ({
     content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
 });

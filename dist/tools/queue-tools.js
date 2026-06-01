@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { queue } from "../queue.js";
+import { queue } from "../queue";
 const renderTool = (data) => ({
     content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
 });

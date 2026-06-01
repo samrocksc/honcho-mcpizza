@@ -188,6 +188,41 @@ This way memory accumulates locally and syncs on a schedule you control.
 2. conclusion_query  — search by semantic similarity
 ```
 
+## Workspaces
+
+Workspaces are top-level containers for organizing peers and sessions. Think of them as project/app boundaries.
+
+### Creating & Using Workspaces
+
+Most tools require a `workspace_id`. Get or create one:
+
+```
+workspace_get_or_create(name="my-app") → returns { id: "ws_abc123", ... }
+```
+
+Then pass the `workspace_id` to other tools:
+- `peer_get_or_create(workspace_id="ws_abc123", name="alice")`
+- `session_get_or_create(workspace_id="ws_abc123", name="conversation-1")`
+- `workspace_search(workspace_id="ws_abc123", query="...")`
+
+### Multi-Workspace Setup
+
+You can have multiple workspaces in the same Honcho server:
+- `workspace_id="ws_prod"` for production data
+- `workspace_id="ws_staging"` for testing
+- `workspace_id="ws_personal"` for personal notes
+
+Just use different workspace IDs in your tool calls.
+
+### Default Workspace
+
+If you don't explicitly create a workspace, you can ask Claude to create one or use:
+```
+workspace_get_or_create(name="default") → reuses if exists
+```
+
+The workspace ID persists—future calls with the same name get the same workspace.
+
 ## Configuration
 
 ### Environment Variables
@@ -197,8 +232,36 @@ This way memory accumulates locally and syncs on a schedule you control.
 ### CLI Arguments
 - `--honcho-url` — Override `HONCHO_URL`
 - `--honcho-api-key` — Override `HONCHO_API_KEY`
+- `--workspace-id` — Set default workspace (used if not specified in tool calls)
 
 CLI args take precedence over env vars.
+
+### Default Workspace
+
+Set a default workspace ID so you don't have to pass it every time:
+
+```json
+{
+  "mcpServers": {
+    "honcho": {
+      "command": "npx",
+      "args": ["-y", "github:samrocksc/honcho-mcpizza", "--honcho-url", "http://your-honcho-server:8000", "--workspace-id", "ws_my_app"],
+      "env": {
+        "HONCHO_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
+```
+
+Or via env var:
+```json
+{
+  "env": {
+    "HONCHO_WORKSPACE_ID": "ws_my_app"
+  }
+}
+```
 
 ## Example: Query Memory
 

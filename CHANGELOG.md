@@ -1,5 +1,11 @@
 # honcho-mcpizza
 
+## 0.2.2
+
+### Patch Changes
+
+- d87f301: Fix release workflow to properly authenticate with GitHub Packages using NODE_AUTH_TOKEN with the runner's GITHUB_TOKEN
+
 ## 0.2.1
 
 ### Patch Changes

@@ -1,7 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
 import { z } from "zod";
-import type { Config } from "../config";
-import { queue } from "../queue";
+import type { Config } from "../config.js";
+import { queue } from "../queue.js";
 
 const renderTool = <T>(data: T) => ({
   content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }],

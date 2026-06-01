@@ -2,8 +2,8 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
 import type { Layer } from "effect";
 import { Effect } from "effect";
 import { z } from "zod";
-import { HonchoClient, type HonchoClientService } from "../client/index";
-import type { HonchoClientError } from "../client/errors";
+import { HonchoClient, type HonchoClientService } from "../client/index.js";
+import type { HonchoClientError } from "../client/errors.js";
 
 const renderTool = <T>(data: T) => ({
   content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }],

@@ -1,6 +1,6 @@
 import { Context, Effect, Layer } from "effect";
-import type { Config } from "../config";
-import type { HonchoClientError } from "./errors";
+import type { Config } from "../config.js";
+import type { HonchoClientError } from "./errors.js";
 
 export const HonchoConfig = Context.GenericTag<Config>("HonchoConfig");
 

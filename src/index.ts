@@ -3,9 +3,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio";
 import { Layer } from "effect";
-import { parseConfig } from "./config";
-import { HonchoClientLayer, HonchoConfig } from "./client/index";
-import { registerAllTools } from "./tools/index";
+import { parseConfig } from "./config.js";
+import { HonchoClientLayer, HonchoConfig } from "./client/index.js";
+import { registerAllTools } from "./tools/index.js";
 
 const main = async (): Promise<void> => {
   try {

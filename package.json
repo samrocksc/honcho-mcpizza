@@ -4,7 +4,7 @@
   "description": "Honcho MCP server for Claude Desktop",
   "type": "module",
   "bin": {
-    "honcho-mcp": "dist/index.js"
+    "honcho-mcpizza": "dist/index.js"
   },
   "files": [
     "dist",

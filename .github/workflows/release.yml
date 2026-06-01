@@ -7,23 +7,26 @@ on:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
+          registry-url: "https://npm.pkg.github.com"
+          # This scopes the registry to your username/org
+          scope: "@samrocksc"
 
       - run: npm ci
-
-      - name: Configure npm for GitHub Packages
-        run: |
-          npm config set @samrocksc:registry https://npm.pkg.github.com
-          npm config set //npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_PACKAGES_TOKEN }}
 
       - name: Create Release Pull Request or Publish to GitHub Packages
         id: changesets
@@ -31,4 +34,5 @@ jobs:
         with:
           publish: npm run release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_PACKAGES_TOKEN }}
+          # Use the automatic GITHUB_TOKEN provided by the runner
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
